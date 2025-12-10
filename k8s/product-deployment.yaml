@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-service
+  template:
+    metadata:
+      labels:
+        app: product-service
+    spec:
+      containers:
+        - name: product-service
+          image: itachi21113/product-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          # ---------------------------------------------------------
+          # THE FIX: Force Spring Boot to use this URI using 'args'
+          # ---------------------------------------------------------
+          command: [ "java", "-jar", "/app.jar" ]
+          args: [ "--spring.data.mongodb.uri=mongodb://product-user:productpassword@mongo-mongodb:27017/product-service" ]
+
+          env:
+            - name: SPRING_DATA_MONGODB_HOST
+              value: "mongo-mongodb"
+            - name: SPRING_DATA_MONGODB_PORT
+              value: "27017"
+            - name: SPRING_DATA_MONGODB_DATABASE
+              value: "product-service"
+            - name: SPRING_DATA_MONGODB_USERNAME
+              value: "product-user"
+            - name: SPRING_DATA_MONGODB_PASSWORD
+              value: "productpassword"
+            - name: SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE
+              value: "product-service"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: product-service
+  ports:
+    - port: 80
+      targetPort: 8080

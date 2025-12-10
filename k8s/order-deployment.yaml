@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+        - name: order-service
+          # REPLACE 'itachi21113' WITH YOUR DOCKER HUB USERNAME
+          image: itachi21113/order-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_DATASOURCE_URL
+              # WE MUST USE PORT 3306 HERE TO MATCH THE K8S SERVICE
+              value: "jdbc:mysql://mysql:3306/order_service"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "root"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "rootpassword"
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: order-service
+  ports:
+    - port: 80
+      targetPort: 8081
