@@ -68,14 +68,33 @@ jobs:
       # 2. Deploy your Databases and Apps
       - name: Deploy Manifests
         run: |
-          # Apply MongoDB and MySQL first
-          helm upgrade --install my-mongo ./charts/mongo --wait
-          kubectl apply -f k8s/mysql-deployment.yaml
+          # A. Add the Bitnami Helm Repository
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
           
-          # Wait for databases to be potentially ready (optional, but good practice)
-          sleep 10
+          # B. Install MongoDB 
+          # Matches your local config: creates user 'product-user', db 'product-service'
+          helm upgrade --install my-mongo bitnami/mongodb \
+            --set auth.rootPassword=rootpassword \
+            --set auth.username=product-user \
+            --set auth.password=productpassword \
+            --set auth.database=product-service \
+            --set image.registry=docker.io \
+            --set image.repository=bitnamilegacy/mongodb \
+            --set image.tag=7.0 \
+            --wait
+
+          # C. Install MySQL
+          # Matches your local config: creates db 'order_service'
+          helm upgrade --install my-mysql bitnami/mysql \
+            --set auth.rootPassword=rootpassword \
+            --set auth.database=order_service \
+            --set image.registry=docker.io \
+            --set image.repository=bitnamilegacy/mysql \
+            --set image.tag=8.0.35-debian-11-r0 \
+            --wait
           
-          # Apply Microservices
+          # D. Apply Microservices
           kubectl apply -f k8s/product-deployment.yaml
           kubectl apply -f k8s/order-deployment.yaml
 
