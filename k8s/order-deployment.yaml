@@ -14,15 +14,15 @@ spec:
     spec:
       containers:
         - name: order-service
-          # REPLACE 'itachi21113' WITH YOUR DOCKER HUB USERNAME
+          # REPLACE 'itachi21113' WITH YOUR DOCKER HUB USERNAME IF NEEDED
           image: itachi21113/order-service:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8081
           env:
             - name: SPRING_DATASOURCE_URL
-              # WE MUST USE PORT 3306 HERE TO MATCH THE K8S SERVICE
-              value: "jdbc:mysql://mysql:3306/order_service"
+              # Added parameters to create DB if missing and allow connection
+              value: "jdbc:mysql://mysql:3306/order_service?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false"
             - name: SPRING_DATASOURCE_USERNAME
               value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
@@ -39,5 +39,6 @@ spec:
   selector:
     app: order-service
   ports:
-    - port: 80
+    # Changed external port to 8081 to avoid conflict with Product Service
+    - port: 8081
       targetPort: 8081

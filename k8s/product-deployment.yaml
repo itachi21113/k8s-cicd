@@ -1,51 +1,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: product-service
+  name: mongo-mongodb
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: product-service
+      app: mongo-mongodb
   template:
     metadata:
       labels:
-        app: product-service
+        app: mongo-mongodb
     spec:
       containers:
-        - name: product-service
-          image: itachi21113/product-service:latest
-          imagePullPolicy: Always
+        - name: mongo
+          image: mongo:latest
           ports:
-            - containerPort: 8080
-          # ---------------------------------------------------------
-          # THE FIX: Force Spring Boot to use this URI using 'args'
-          # ---------------------------------------------------------
-          command: [ "java", "-jar", "/app.jar" ]
-          args: [ "--spring.data.mongodb.uri=mongodb://product-user:productpassword@mongo-mongodb:27017/product-service" ]
-
+            - containerPort: 27017
           env:
-            - name: SPRING_DATA_MONGODB_HOST
-              value: "mongo-mongodb"
-            - name: SPRING_DATA_MONGODB_PORT
-              value: "27017"
-            - name: SPRING_DATA_MONGODB_DATABASE
-              value: "product-service"
-            - name: SPRING_DATA_MONGODB_USERNAME
+            # These create the user your Java App uses
+            - name: MONGO_INITDB_ROOT_USERNAME
               value: "product-user"
-            - name: SPRING_DATA_MONGODB_PASSWORD
+            - name: MONGO_INITDB_ROOT_PASSWORD
               value: "productpassword"
-            - name: SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE
+            - name: MONGO_INITDB_DATABASE
               value: "product-service"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: product-service
+  name: mongo-mongodb # This MUST match the host in your application.properties
 spec:
-  type: LoadBalancer
   selector:
-    app: product-service
+    app: mongo-mongodb
   ports:
-    - port: 80
-      targetPort: 8080
+    - port: 27017
+      targetPort: 27017
