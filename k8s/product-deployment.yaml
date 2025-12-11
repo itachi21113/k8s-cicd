@@ -21,7 +21,8 @@ spec:
           env:
             - name: SPRING_DATA_MONGODB_URI
               # Connects to the 'mongo-mongodb' Service on port 27017
-              value: "mongodb://product-user:productpassword@mongo-mongodb:27017/product-service?authSource=admin"
+              value: "mongodb://product-user:productpassword@mongo-mongodb:27017/product-service?authSource=product-service"
+
 ---
 apiVersion: v1
 kind: Service
