@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-mongodb
+  template:
+    metadata:
+      labels:
+        app: mongo-mongodb
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+          env:
+            # These create the user your Java App uses
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: "product-user"
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: "productpassword"
+            - name: MONGO_INITDB_DATABASE
+              value: "product-service"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-mongodb # This MUST match the host in your application.properties
+spec:
+  selector:
+    app: mongo-mongodb
+  ports:
+    - port: 27017
+      targetPort: 27017

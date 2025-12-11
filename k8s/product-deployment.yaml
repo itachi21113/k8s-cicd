@@ -1,38 +1,36 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongo-mongodb
+  name: product-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mongo-mongodb
+      app: product-service
   template:
     metadata:
       labels:
-        app: mongo-mongodb
+        app: product-service
     spec:
       containers:
-        - name: mongo
-          image: mongo:latest
+        - name: product-service
+          image: itachi21113/product-service:latest
+          imagePullPolicy: Always
           ports:
-            - containerPort: 27017
+            - containerPort: 8080
           env:
-            # These create the user your Java App uses
-            - name: MONGO_INITDB_ROOT_USERNAME
-              value: "product-user"
-            - name: MONGO_INITDB_ROOT_PASSWORD
-              value: "productpassword"
-            - name: MONGO_INITDB_DATABASE
-              value: "product-service"
+            - name: SPRING_DATA_MONGODB_URI
+              # Connects to the 'mongo-mongodb' Service on port 27017
+              value: "mongodb://product-user:productpassword@mongo-mongodb:27017/product-service?authSource=admin"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongo-mongodb # This MUST match the host in your application.properties
+  name: product-service
 spec:
+  type: LoadBalancer
   selector:
-    app: mongo-mongodb
+    app: product-service
   ports:
-    - port: 27017
-      targetPort: 27017
+    - port: 8080
+      targetPort: 8080
