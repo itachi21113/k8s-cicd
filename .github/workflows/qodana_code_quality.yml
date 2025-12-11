@@ -1,0 +1,39 @@
+name: CI Pipeline (Build & Test)
+
+# Trigger: Run this pipeline on every push to the main branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    name: Build Microservices
+    runs-on: ubuntu-latest # This is the "clean Linux server" provided by GitHub
+
+    steps:
+      # Step 1: Download your code from the repo
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Install Java 21 (since your Dockerfile uses eclipse-temurin:21)
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven' # Automatically caches dependencies so builds are faster next time
+
+      # Step 3: Compile & Test Product Service
+      - name: Build Product Service
+        run: |
+          cd product-service-k8s
+          mvn clean package -DskipTests=false
+        # Note: We are NOT skipping tests. If tests fail, the pipeline fails.
+
+      # Step 4: Compile & Test Order Service
+      - name: Build Order Service
+        run: |
+          cd order-service-k8s
+          mvn clean package -DskipTests=false
