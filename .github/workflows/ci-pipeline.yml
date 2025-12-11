@@ -69,7 +69,7 @@ jobs:
       - name: Deploy Manifests
         run: |
           # Apply MongoDB and MySQL first
-          kubectl apply -f k8s/mongo-deployment.yaml
+          helm upgrade --install my-mongo ./charts/mongo --wait
           kubectl apply -f k8s/mysql-deployment.yaml
           
           # Wait for databases to be potentially ready (optional, but good practice)
